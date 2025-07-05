@@ -1,3 +1,159 @@
+# 🏎️ BeamNG Driving Dataset for Monodepth2
+
+## Environment Setup
+
+First of all, clone the repository and enter the project directory:
+
+```sh
+git clone https://github.com/asb127/monodepth2-beamng.git
+cd monodepth2-beamng
+```
+
+To set up the environment for Monodepth2, use the following steps (recommended for Anaconda users):
+
+```sh
+# Create and activate a new conda environment
+conda create -n monodepth2 python=3.6.6 anaconda -y
+conda activate monodepth2
+
+# Install all required Python packages
+pip install -r requirements.txt
+```
+
+## 🚗 BeamNG Driving Dataset Guide
+
+This section provides a complete, step-by-step guide for using the BeamNG Driving Dataset with Monodepth2. All instructions are project-relative, generic, and designed for easy reproducibility.
+
+---
+
+### 1. Environment Setup
+
+Clone the repository and enter the project directory:
+
+```sh
+git clone https://github.com/asb127/monodepth2-beamng.git
+cd monodepth2-beamng
+```
+
+Create and activate a new conda environment (recommended):
+
+```sh
+conda create -n monodepth2 python=3.6.6 anaconda -y
+conda activate monodepth2
+```
+
+Install all required Python packages:
+
+```sh
+pip install -r requirements.txt
+```
+
+---
+
+### 2. Downloading the Dataset
+
+The BeamNG Driving Dataset is available for download from Mega:
+
+**[Download BeamNG-Driving-Dataset from Mega](https://mega.nz/folder/VZcBjDKJ#x7Ezx5bwVFFDW9MuBY13CA)**
+
+Alternatively, you can use the command line for a more automated and reproducible download. Choose either `megatools` or `megacmd` and follow the steps below.
+
+#### 2.1 Install Download Tools
+
+##### a) megatools
+
+- **Linux:**
+  ```sh
+  sudo apt-get update && sudo apt-get install -y megatools
+  ```
+- **macOS:**
+  ```sh
+  brew install megatools
+  ```
+
+##### b) megacmd
+
+- **Ubuntu:**
+  ```sh
+  sudo apt-get update && sudo apt-get install -y megacmd
+  ```
+- **macOS:**
+  ```sh
+  brew install megacmd
+  ```
+- **Windows:**
+  Download the installer from the [official Mega CMD page](https://mega.nz/cmd) and follow the installation instructions.
+- **Other Linux distributions:**
+  See the [official Mega CMD documentation](https://mega.nz/cmd) for installation instructions specific to your distribution.
+
+#### 2.2 Download the Dataset
+
+- **With megatools:**
+  ```sh
+  megadl 'https://mega.nz/folder/VZcBjDKJ#x7Ezx5bwVFFDW9MuBY13CA' --path ./BeamNG-Driving-Dataset
+  ```
+- **With megacmd:**
+  ```sh
+  mega-get 'https://mega.nz/folder/VZcBjDKJ#x7Ezx5bwVFFDW9MuBY13CA' ./BeamNG-Driving-Dataset
+  ```
+
+#### 2.3 After Downloading
+
+Extract the dataset if needed. The expected folder structure is:
+
+```
+BeamNG-Driving-Dataset/<session>/color/frame_xxxxx_sensor_camera_color.png
+BeamNG-Driving-Dataset/<session>/depth/frame_xxxxx_sensor_camera_depth.png
+```
+
+---
+
+### 3. Preparing the splits
+
+Predefined splits for training and validation are provided:
+- `splits/beamng/train_files.txt` (80% training)
+- `splits/beamng/val_files.txt` (20% validation)
+
+**Custom splits:**
+- To use a different split, edit `tools/make_beamng_split.py` and run it to regenerate the split files.
+- The script supports custom ratios and random seeds for reproducibility.
+
+---
+
+### 4. Training with BeamNG Driving Dataset
+
+To train a model on the BeamNG Driving Dataset:
+
+```sh
+python train.py --model_name beamng_mono --data_path ./BeamNG-Driving-Dataset --split beamng
+```
+
+- `--model_name` sets the experiment name (change as desired).
+- `--data_path` should point to your BeamNG dataset folder (relative or absolute).
+- `--split beamng` tells the loader to use the BeamNG split files.
+
+**Tip:** You can pass additional options to `train.py` as needed (see `python train.py -h`).
+
+---
+
+### 5. Evaluation
+
+To evaluate a trained model on the BeamNG validation set:
+
+```sh
+python evaluate_depth.py --load_weights_folder <path_to_weights> --data_path ./BeamNG-Driving-Dataset --eval_split beamng
+```
+
+- Replace `<path_to_weights>` with the path to your trained model weights (e.g., `./beamng_mono/models/weights_19/`).
+- The evaluation script uses the order in `val_files.txt` to match predictions to ground truth.
+
+---
+
+### 7. Citing & License
+
+If you use this dataset or code, please cite the original Monodepth2 paper (see below) and respect the license terms.
+
+---
 # Monodepth2
 
 This is the reference PyTorch implementation for training and testing depth estimation models using the method described in
@@ -104,7 +260,8 @@ find kitti_data/ -name '*.png' | parallel 'convert -quality 92 -sampling-factor 
 The above conversion command creates images which match our experiments, where KITTI `.png` images were converted to `.jpg` on Ubuntu 16.04 with default chroma subsampling `2x2,1x1,1x1`.
 We found that Ubuntu 18.04 defaults to `2x2,2x2,2x2`, which gives different results, hence the explicit parameter in the conversion command.
 
-You can also place the KITTI dataset wherever you like and point towards it with the `--data_path` flag during training and evaluation.
+
+You can also place the KITTI dataset wherever you like and point towards it with the `--data_path` flag during training and evaluation. (For BeamNG, use `--data_path ./BeamNG-Driving-Dataset` as shown above.)
 
 **Splits**
 
@@ -112,7 +269,7 @@ The train/test/validation splits are defined in the `splits/` folder.
 By default, the code will train a depth model using [Zhou's subset](https://github.com/tinghuiz/SfMLearner) of the standard Eigen split of KITTI, which is designed for monocular training.
 You can also train a model using the new [benchmark split](http://www.cvlibs.net/datasets/kitti/eval_depth.php?benchmark=depth_prediction) or the [odometry split](http://www.cvlibs.net/datasets/kitti/eval_odometry.php) by setting the `--split` flag.
 
-
+T
 **Custom dataset**
 
 You can train on a custom monocular or stereo dataset by writing a new dataloader class which inherits from `MonoDataset` – see the `KITTIDataset` class in `datasets/kitti_dataset.py` for an example.
@@ -227,13 +384,14 @@ Setting the `--eval_stereo` flag when evaluating will automatically disable medi
 
 We include code for evaluating poses predicted by models trained with `--split odom --dataset kitti_odom --data_path /path/to/kitti/odometry/dataset`.
 
+
 For this evaluation, the [KITTI odometry dataset](http://www.cvlibs.net/datasets/kitti/eval_odometry.php) **(color, 65GB)** and **ground truth poses** zip files must be downloaded.
 As above, we assume that the pngs have been converted to jpgs.
 
-If this data has been unzipped to folder `kitti_odom`, a model can be evaluated with:
+If this data has been unzipped to a folder (e.g., `./kitti_odom`), a model can be evaluated with:
 ```shell
-python evaluate_pose.py --eval_split odom_9 --load_weights_folder ./odom_split.M/models/weights_29 --data_path kitti_odom/
-python evaluate_pose.py --eval_split odom_10 --load_weights_folder ./odom_split.M/models/weights_29 --data_path kitti_odom/
+python evaluate_pose.py --eval_split odom_9 --load_weights_folder ./odom_split.M/models/weights_29 --data_path ./kitti_odom/
+python evaluate_pose.py --eval_split odom_10 --load_weights_folder ./odom_split.M/models/weights_29 --data_path ./kitti_odom/
 ```
 
 
