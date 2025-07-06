@@ -111,7 +111,8 @@ class Trainer:
         print("Training is using:\n  ", self.device)
 
         # data
-        datasets_dict = {"kitti": datasets.KITTIRAWDataset,
+        datasets_dict = {"beamng": datasets.BeamNGDataset,
+                         "kitti": datasets.KITTIRAWDataset,
                          "kitti_odom": datasets.KITTIOdomDataset}
         self.dataset = datasets_dict[self.opt.dataset]
 

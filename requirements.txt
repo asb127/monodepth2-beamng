@@ -1,6 +1,3 @@
-
-# Monodepth2 requirements (modern PyTorch/torchvision compatible)
-# For Colab and modern environments: do NOT install torch/torchvision here; use preinstalled versions.
 opencv-python
 tensorboardX
 scikit-image

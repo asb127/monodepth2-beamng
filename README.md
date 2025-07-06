@@ -126,7 +126,7 @@ Predefined splits for training and validation are provided:
 To train a model on the BeamNG Driving Dataset:
 
 ```sh
-python train.py --model_name beamng_mono --data_path ./BeamNG-Driving-Dataset --split beamng
+python train.py --model_name beamng_mono --data_path ./BeamNG-Driving-Dataset --split beamng --dataset beamng
 ```
 
 - `--model_name` sets the experiment name (change as desired).

@@ -13,7 +13,6 @@ import torch.nn as nn
 import torchvision.models as models
 
 
-
 class ResNetMultiImageInput(models.ResNet):
     """Constructs a resnet model with varying number of input images.
     Adapted from https://github.com/pytorch/vision/blob/master/torchvision/models/resnet.py
@@ -52,7 +51,7 @@ def resnet_multiimage_input(num_layers, pretrained=False, num_input_images=1):
     model = ResNetMultiImageInput(block_type, blocks, num_input_images=num_input_images)
 
     if pretrained:
-        # Use new torchvision weights API for pretrained weights
+        # Using new torchvision weights API for pretrained weights
         if num_layers == 18:
             from torchvision.models import ResNet18_Weights
             weights = ResNet18_Weights.DEFAULT
@@ -63,7 +62,6 @@ def resnet_multiimage_input(num_layers, pretrained=False, num_input_images=1):
             loaded = models.resnet50(weights=weights).state_dict()
         else:
             raise ValueError("Only ResNet-18 and ResNet-50 are supported for multi-image input.")
-        # Adapt first conv layer for multi-image input
         loaded['conv1.weight'] = torch.cat(
             [loaded['conv1.weight']] * num_input_images, 1) / num_input_images
         model.load_state_dict(loaded)
@@ -90,7 +88,7 @@ class ResnetEncoder(nn.Module):
         if num_input_images > 1:
             self.encoder = resnet_multiimage_input(num_layers, pretrained, num_input_images)
         else:
-            # Use new torchvision weights API for single-image input
+            # Using new torchvision weights API for single-image input
             weights = None
             if pretrained:
                 if num_layers == 18:
