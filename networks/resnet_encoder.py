@@ -11,7 +11,7 @@ import numpy as np
 import torch
 import torch.nn as nn
 import torchvision.models as models
-import torch.utils.model_zoo as model_zoo
+
 
 
 class ResNetMultiImageInput(models.ResNet):
@@ -52,7 +52,18 @@ def resnet_multiimage_input(num_layers, pretrained=False, num_input_images=1):
     model = ResNetMultiImageInput(block_type, blocks, num_input_images=num_input_images)
 
     if pretrained:
-        loaded = model_zoo.load_url(models.resnet.model_urls['resnet{}'.format(num_layers)])
+        # Use new torchvision weights API for pretrained weights
+        if num_layers == 18:
+            from torchvision.models import ResNet18_Weights
+            weights = ResNet18_Weights.DEFAULT
+            loaded = models.resnet18(weights=weights).state_dict()
+        elif num_layers == 50:
+            from torchvision.models import ResNet50_Weights
+            weights = ResNet50_Weights.DEFAULT
+            loaded = models.resnet50(weights=weights).state_dict()
+        else:
+            raise ValueError("Only ResNet-18 and ResNet-50 are supported for multi-image input.")
+        # Adapt first conv layer for multi-image input
         loaded['conv1.weight'] = torch.cat(
             [loaded['conv1.weight']] * num_input_images, 1) / num_input_images
         model.load_state_dict(loaded)
@@ -79,7 +90,25 @@ class ResnetEncoder(nn.Module):
         if num_input_images > 1:
             self.encoder = resnet_multiimage_input(num_layers, pretrained, num_input_images)
         else:
-            self.encoder = resnets[num_layers](pretrained)
+            # Use new torchvision weights API for single-image input
+            weights = None
+            if pretrained:
+                if num_layers == 18:
+                    from torchvision.models import ResNet18_Weights
+                    weights = ResNet18_Weights.DEFAULT
+                elif num_layers == 34:
+                    from torchvision.models import ResNet34_Weights
+                    weights = ResNet34_Weights.DEFAULT
+                elif num_layers == 50:
+                    from torchvision.models import ResNet50_Weights
+                    weights = ResNet50_Weights.DEFAULT
+                elif num_layers == 101:
+                    from torchvision.models import ResNet101_Weights
+                    weights = ResNet101_Weights.DEFAULT
+                elif num_layers == 152:
+                    from torchvision.models import ResNet152_Weights
+                    weights = ResNet152_Weights.DEFAULT
+            self.encoder = resnets[num_layers](weights=weights)
 
         if num_layers > 34:
             self.num_ch_enc[1:] *= 4

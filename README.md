@@ -10,18 +10,33 @@ git clone https://github.com/asb127/monodepth2-beamng.git
 cd monodepth2-beamng
 ```
 
-Create and activate a new conda environment (recommended):
+
+**Python & PyTorch version:**
+
+- This project now supports **modern PyTorch and torchvision** (e.g., Colab default versions, or PyTorch ≥1.12, torchvision ≥0.13). The codebase has been updated for compatibility.
+- For local installs, use Python 3.8+ and install the latest torch/torchvision as per [PyTorch instructions](https://pytorch.org/get-started/locally/).
+
+**Local install:**
+
 
 ```sh
-conda create -n monodepth2 python=3.6.6 anaconda -y
+conda create -n monodepth2 python=3.8 anaconda -y
 conda activate monodepth2
-```
-
-Install all required Python packages:
-
-```sh
+pip install torch torchvision
 pip install -r requirements.txt
 ```
+
+> **Note:** The above commands are for local Linux/macOS/Windows systems only. **Do not use `conda` or try to create/activate environments in Google Colab.** 
+
+**Google Colab:**
+
+- Colab already includes compatible torch/torchvision. Just run:
+
+```sh
+!pip install -r requirements.txt
+```
+
+Colab does not support conda environments or changing the system Python version. Always use the preinstalled Python and install extra packages with `pip` only in Colab. Do **not** install torch/torchvision in Colab unless you need a specific version.
 
 Create the directory where the BeamNG Driving Dataset will be stored, if it does not exist:
 - **On Linux/macOS:**
@@ -39,7 +54,7 @@ Create the directory where the BeamNG Driving Dataset will be stored, if it does
 
 The BeamNG Driving Dataset is available for download from Mega:
 
-**[Download BeamNG-Driving-Dataset from Mega](https://mega.nz/folder/VZcBjDKJ#x7Ezx5bwVFFDW9MuBY13CA)**
+**[Download BeamNG-Driving-Dataset from Mega](https://mega.nz/file/gYtXjA5D#XhzsrDOxR4W1psKM5fkh3dADfqlIrdlffNTDnxDkE7A)**
 
 Alternatively, you can use the command line for a more automated and reproducible download. Choose either `megatools` or `megacmd` and follow the steps below.
 
@@ -76,11 +91,11 @@ Alternatively, you can use the command line for a more automated and reproducibl
 
 - **With megatools:**
   ```sh
-  megadl 'https://mega.nz/folder/VZcBjDKJ#x7Ezx5bwVFFDW9MuBY13CA' --path ./BeamNG-Driving-Dataset
+  megadl 'https://mega.nz/file/gYtXjA5D#XhzsrDOxR4W1psKM5fkh3dADfqlIrdlffNTDnxDkE7A' --path ./BeamNG-Driving-Dataset
   ```
 - **With megacmd:**
   ```sh
-  mega-get 'https://mega.nz/folder/VZcBjDKJ#x7Ezx5bwVFFDW9MuBY13CA' ./BeamNG-Driving-Dataset
+  mega-get 'https://mega.nz/file/gYtXjA5D#XhzsrDOxR4W1psKM5fkh3dADfqlIrdlffNTDnxDkE7A' ./BeamNG-Driving-Dataset
   ```
 
 ### 2.3 After Downloading
@@ -121,26 +136,13 @@ python train.py --model_name beamng_mono --data_path ./BeamNG-Driving-Dataset --
 
 ---
 
-## 5. Evaluation
-
-To evaluate a trained model on the BeamNG validation set:
-
-```sh
-python evaluate_depth.py --load_weights_folder <path_to_weights> --data_path ./BeamNG-Driving-Dataset --eval_split beamng
-```
-
-- Replace `<path_to_weights>` with the path to your trained model weights. By default, they will be in `./beamng_mono/models/weights_19/` if the training script was executed as presented.
-- The evaluation script uses the order in `val_files.txt` to match predictions to ground truth.
-- You can pass additional options to `evaluate_depth.py` as needed (see `python evaluate_depth.py -h`).
-
----
 
 ## 6. Citing & License
 
 If you use this dataset or code, please cite the original Monodepth2 paper (see below) and respect the license terms.
 
 ---
-# Monodepth2
+# Monodepth2 (original README)
 
 This is the reference PyTorch implementation for training and testing depth estimation models using the method described in
 
