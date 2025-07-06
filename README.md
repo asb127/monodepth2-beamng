@@ -121,7 +121,28 @@ python train.py --model_name beamng_mono --data_path ./BeamNG-Driving-Dataset --
 
 ---
 
-## 5. Citing & License
+## 6. Ubuntu script to finetune mono_640x192 model on BeamNG and compre results
+
+An Ubuntu bash script is provided to:
+- Download the official pretrained mono_640x192 model
+- Finetune it on the BeamNG Driving Dataset
+- Evaluate both the original and the finetuned models
+- Save all results and depth maps for later analysis
+
+**To use:**
+
+1. Make sure your environment is set up and the dataset is downloaded as described above.
+2. Run the following command from the project root:
+
+```sh
+bash finetune_and_evaluate_beamng.sh
+```
+
+By default, the script will create all necessary folders and save the results in `./eval_results/original_mono_640x192` and `./eval_results/finetuned_mono_640x192`.
+
+---
+
+## 7. Citing & License
 
 If you use this dataset or code, please cite the original Monodepth2 paper (see below) and respect the license terms.
 
@@ -232,8 +253,7 @@ find kitti_data/ -name '*.png' | parallel 'convert -quality 92 -sampling-factor 
 The above conversion command creates images which match our experiments, where KITTI `.png` images were converted to `.jpg` on Ubuntu 16.04 with default chroma subsampling `2x2,1x1,1x1`.
 We found that Ubuntu 18.04 defaults to `2x2,2x2,2x2`, which gives different results, hence the explicit parameter in the conversion command.
 
-
-You can also place the KITTI dataset wherever you like and point towards it with the `--data_path` flag during training and evaluation. (For BeamNG, use `--data_path ./BeamNG-Driving-Dataset` as shown above.)
+You can also place the KITTI dataset wherever you like and point towards it with the `--data_path` flag during training and evaluation.
 
 **Splits**
 
@@ -241,7 +261,7 @@ The train/test/validation splits are defined in the `splits/` folder.
 By default, the code will train a depth model using [Zhou's subset](https://github.com/tinghuiz/SfMLearner) of the standard Eigen split of KITTI, which is designed for monocular training.
 You can also train a model using the new [benchmark split](http://www.cvlibs.net/datasets/kitti/eval_depth.php?benchmark=depth_prediction) or the [odometry split](http://www.cvlibs.net/datasets/kitti/eval_odometry.php) by setting the `--split` flag.
 
-T
+
 **Custom dataset**
 
 You can train on a custom monocular or stereo dataset by writing a new dataloader class which inherits from `MonoDataset` – see the `KITTIDataset` class in `datasets/kitti_dataset.py` for an example.
@@ -356,14 +376,13 @@ Setting the `--eval_stereo` flag when evaluating will automatically disable medi
 
 We include code for evaluating poses predicted by models trained with `--split odom --dataset kitti_odom --data_path /path/to/kitti/odometry/dataset`.
 
-
 For this evaluation, the [KITTI odometry dataset](http://www.cvlibs.net/datasets/kitti/eval_odometry.php) **(color, 65GB)** and **ground truth poses** zip files must be downloaded.
 As above, we assume that the pngs have been converted to jpgs.
 
-If this data has been unzipped to a folder (e.g., `./kitti_odom`), a model can be evaluated with:
+If this data has been unzipped to folder `kitti_odom`, a model can be evaluated with:
 ```shell
-python evaluate_pose.py --eval_split odom_9 --load_weights_folder ./odom_split.M/models/weights_29 --data_path ./kitti_odom/
-python evaluate_pose.py --eval_split odom_10 --load_weights_folder ./odom_split.M/models/weights_29 --data_path ./kitti_odom/
+python evaluate_pose.py --eval_split odom_9 --load_weights_folder ./odom_split.M/models/weights_29 --data_path kitti_odom/
+python evaluate_pose.py --eval_split odom_10 --load_weights_folder ./odom_split.M/models/weights_29 --data_path kitti_odom/
 ```
 
 
