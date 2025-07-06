@@ -39,7 +39,7 @@ Create the directory where the BeamNG Driving Dataset will be stored, if it does
 
 The BeamNG Driving Dataset is available for download from Mega:
 
-**[Download BeamNG-Driving-Dataset from Mega](https://mega.nz/folder/VZcBjDKJ#x7Ezx5bwVFFDW9MuBY13CA)**
+**[Download BeamNG-Driving-Dataset from Mega](https://mega.nz/file/gYtXjA5D#XhzsrDOxR4W1psKM5fkh3dADfqlIrdlffNTDnxDkE7A)**
 
 Alternatively, you can use the command line for a more automated and reproducible download. Choose either `megatools` or `megacmd` and follow the steps below.
 
@@ -76,11 +76,11 @@ Alternatively, you can use the command line for a more automated and reproducibl
 
 - **With megatools:**
   ```sh
-  megadl 'https://mega.nz/folder/VZcBjDKJ#x7Ezx5bwVFFDW9MuBY13CA' --path ./BeamNG-Driving-Dataset
+  megadl 'https://mega.nz/file/gYtXjA5D#XhzsrDOxR4W1psKM5fkh3dADfqlIrdlffNTDnxDkE7A' --path ./BeamNG-Driving-Dataset
   ```
 - **With megacmd:**
   ```sh
-  mega-get 'https://mega.nz/folder/VZcBjDKJ#x7Ezx5bwVFFDW9MuBY13CA' ./BeamNG-Driving-Dataset
+  mega-get 'https://mega.nz/file/gYtXjA5D#XhzsrDOxR4W1psKM5fkh3dADfqlIrdlffNTDnxDkE7A' ./BeamNG-Driving-Dataset
   ```
 
 ### 2.3 After Downloading
@@ -111,7 +111,7 @@ Predefined splits for training and validation are provided:
 To train a model on the BeamNG Driving Dataset:
 
 ```sh
-python train.py --model_name beamng_mono --data_path ./BeamNG-Driving-Dataset --split beamng
+python train.py --model_name beamng_mono --data_path ./BeamNG-Driving-Dataset --split beamng --dataset beamng
 ```
 
 - `--model_name` sets the experiment name (change as desired).
@@ -121,26 +121,12 @@ python train.py --model_name beamng_mono --data_path ./BeamNG-Driving-Dataset --
 
 ---
 
-## 5. Evaluation
-
-To evaluate a trained model on the BeamNG validation set:
-
-```sh
-python evaluate_depth.py --load_weights_folder <path_to_weights> --data_path ./BeamNG-Driving-Dataset --eval_split beamng
-```
-
-- Replace `<path_to_weights>` with the path to your trained model weights. By default, they will be in `./beamng_mono/models/weights_19/` if the training script was executed as presented.
-- The evaluation script uses the order in `val_files.txt` to match predictions to ground truth.
-- You can pass additional options to `evaluate_depth.py` as needed (see `python evaluate_depth.py -h`).
-
----
-
-## 6. Citing & License
+## 5. Citing & License
 
 If you use this dataset or code, please cite the original Monodepth2 paper (see below) and respect the license terms.
 
 ---
-# Monodepth2
+# Monodepth2 (original README)
 
 This is the reference PyTorch implementation for training and testing depth estimation models using the method described in
 

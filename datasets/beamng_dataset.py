@@ -1,6 +1,6 @@
 import os
 import numpy as np
-from PIL import Image as pil
+from PIL import Image
 from .mono_dataset import MonoDataset
 
 class BeamNGDataset(MonoDataset):
@@ -49,7 +49,7 @@ class BeamNGDataset(MonoDataset):
         The 'side' argument is ignored because this dataset is monocular (only one camera).
         """
         fname = f"frame_{frame_index:05d}_sensor_camera_color.png"
-        return os.path.join(self.data_path, folder, "color", fname)
+        return os.path.join(self.data_path, folder, fname)
 
     def get_depth_path(self, folder, frame_index):
         """
@@ -72,12 +72,18 @@ class BeamNGDataset(MonoDataset):
     def get_color(self, folder, frame_index, side=None, do_flip=False):
         """
         Loads the color image for the given session and frame index.
+        Ensures a PIL Image is always returned (never a tuple).
         Uses self.loader (like Monodepth2 wants). If do_flip is True, the image is flipped horizontally (for augmentation).
         """
         color_path = self.get_image_path(folder, frame_index)
         color = self.loader(color_path)
+        # If loader returns a tuple (image, ...), extract the image
+        if isinstance(color, tuple):
+            color = color[0]
+        if not isinstance(color, Image.Image):
+            color = Image.fromarray(np.array(color))
         if do_flip:
-            color = color.transpose(pil.FLIP_LEFT_RIGHT)
+            color = color.transpose(Image.FLIP_LEFT_RIGHT)
         return color
 
     def get_depth(self, folder, frame_index, side, do_flip):
@@ -88,12 +94,12 @@ class BeamNGDataset(MonoDataset):
         Conversion is done before resizing, so interpolation is in metric space.
         """
         depth_path = self.get_depth_path(folder, frame_index)
-        depth_gt = pil.open(depth_path)
+        depth_gt = Image.open(depth_path)
         depth_gt = np.array(depth_gt).astype(np.float32)
         near = 0.1
         far = 1000.0
         depth_gt = depth_gt / 255.0 * (far - near) + near
-        depth_gt = pil.fromarray(depth_gt).resize(self.full_res_shape, pil.NEAREST)
+        depth_gt = Image.fromarray(depth_gt).resize(self.full_res_shape, Image.NEAREST)
         depth_gt = np.array(depth_gt).astype(np.float32)
         if do_flip:
             depth_gt = np.fliplr(depth_gt)
