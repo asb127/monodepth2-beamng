@@ -1,32 +1,7 @@
 # 🏎️ BeamNG Driving Dataset for Monodepth2
 
-## Environment Setup
-
-First of all, clone the repository and enter the project directory:
-
-```sh
-git clone https://github.com/asb127/monodepth2-beamng.git
-cd monodepth2-beamng
-```
-
-To set up the environment for Monodepth2, use the following steps (recommended for Anaconda users):
-
-```sh
-# Create and activate a new conda environment
-conda create -n monodepth2 python=3.6.6 anaconda -y
-conda activate monodepth2
-
-# Install all required Python packages
-pip install -r requirements.txt
-```
-
-## 🚗 BeamNG Driving Dataset Guide
-
-This section provides a complete, step-by-step guide for using the BeamNG Driving Dataset with Monodepth2. All instructions are project-relative, generic, and designed for easy reproducibility.
-
 ---
-
-### 1. Environment Setup
+## 1. Environment Setup
 
 Clone the repository and enter the project directory:
 
@@ -48,9 +23,19 @@ Install all required Python packages:
 pip install -r requirements.txt
 ```
 
+Create the directory where the BeamNG Driving Dataset will be stored, if it does not exist:
+- **On Linux/macOS:**
+  ```sh
+  mkdir -p ./BeamNG-Driving-Dataset
+  ```
+- **On Windows:**
+  ```sh
+  mkdir BeamNG-Driving-Dataset
+  ```
+
 ---
 
-### 2. Downloading the Dataset
+## 2. Downloading the Dataset
 
 The BeamNG Driving Dataset is available for download from Mega:
 
@@ -58,9 +43,9 @@ The BeamNG Driving Dataset is available for download from Mega:
 
 Alternatively, you can use the command line for a more automated and reproducible download. Choose either `megatools` or `megacmd` and follow the steps below.
 
-#### 2.1 Install Download Tools
+### 2.1 Install Download Tools
 
-##### a) megatools
+#### a) megatools
 
 - **Linux:**
   ```sh
@@ -71,7 +56,7 @@ Alternatively, you can use the command line for a more automated and reproducibl
   brew install megatools
   ```
 
-##### b) megacmd
+#### b) megacmd
 
 - **Ubuntu:**
   ```sh
@@ -84,9 +69,10 @@ Alternatively, you can use the command line for a more automated and reproducibl
 - **Windows:**
   Download the installer from the [official Mega CMD page](https://mega.nz/cmd) and follow the installation instructions.
 - **Other Linux distributions:**
-  See the [official Mega CMD documentation](https://mega.nz/cmd) for installation instructions specific to your distribution.
+  See the [official Mega CMD documentation](https://mega.nz/cmd) for installation instructions specific to each distribution.
 
-#### 2.2 Download the Dataset
+
+### 2.2 Download the Dataset
 
 - **With megatools:**
   ```sh
@@ -97,7 +83,7 @@ Alternatively, you can use the command line for a more automated and reproducibl
   mega-get 'https://mega.nz/folder/VZcBjDKJ#x7Ezx5bwVFFDW9MuBY13CA' ./BeamNG-Driving-Dataset
   ```
 
-#### 2.3 After Downloading
+### 2.3 After Downloading
 
 Extract the dataset if needed. The expected folder structure is:
 
@@ -108,7 +94,7 @@ BeamNG-Driving-Dataset/<session>/depth/frame_xxxxx_sensor_camera_depth.png
 
 ---
 
-### 3. Preparing the splits
+## 3. Preparing the splits
 
 Predefined splits for training and validation are provided:
 - `splits/beamng/train_files.txt` (80% training)
@@ -120,7 +106,7 @@ Predefined splits for training and validation are provided:
 
 ---
 
-### 4. Training with BeamNG Driving Dataset
+## 4. Training with BeamNG Driving Dataset
 
 To train a model on the BeamNG Driving Dataset:
 
@@ -131,12 +117,11 @@ python train.py --model_name beamng_mono --data_path ./BeamNG-Driving-Dataset --
 - `--model_name` sets the experiment name (change as desired).
 - `--data_path` should point to your BeamNG dataset folder (relative or absolute).
 - `--split beamng` tells the loader to use the BeamNG split files.
-
-**Tip:** You can pass additional options to `train.py` as needed (see `python train.py -h`).
+- You can pass additional options to `train.py` as needed (see `python train.py -h`).
 
 ---
 
-### 5. Evaluation
+## 5. Evaluation
 
 To evaluate a trained model on the BeamNG validation set:
 
@@ -144,12 +129,13 @@ To evaluate a trained model on the BeamNG validation set:
 python evaluate_depth.py --load_weights_folder <path_to_weights> --data_path ./BeamNG-Driving-Dataset --eval_split beamng
 ```
 
-- Replace `<path_to_weights>` with the path to your trained model weights (e.g., `./beamng_mono/models/weights_19/`).
+- Replace `<path_to_weights>` with the path to your trained model weights. By default, they will be in `./beamng_mono/models/weights_19/` if the training script was executed as presented.
 - The evaluation script uses the order in `val_files.txt` to match predictions to ground truth.
+- You can pass additional options to `evaluate_depth.py` as needed (see `python evaluate_depth.py -h`).
 
 ---
 
-### 7. Citing & License
+## 6. Citing & License
 
 If you use this dataset or code, please cite the original Monodepth2 paper (see below) and respect the license terms.
 
