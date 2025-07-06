@@ -80,7 +80,7 @@ class MonoDataset(data.Dataset):
             self.brightness = 0.2
             self.contrast = 0.2
             self.saturation = 0.2
-            self.hue = 0.1
+            self.hue = (-0.1, 0.1)
 
         self.resize = {}
         for i in range(self.num_scales):
@@ -179,18 +179,55 @@ class MonoDataset(data.Dataset):
         if do_color_aug:
             params = transforms.ColorJitter.get_params(
                 self.brightness, self.contrast, self.saturation, self.hue)
-            # If params is a tuple, wrap it in a function that applies the augmentations
-            if isinstance(params, tuple):
+            if callable(params):
+                color_aug = params
+            elif isinstance(params, tuple):
                 from torchvision.transforms import functional as F
+                # Accept tuple of length >=4, use only the first 4 values for (b, c, s, h)
+                def _extract_floats_from_params(params):
+                    floats = []
+                    for x in params:
+                        # If x is a 1D tensor, extend with its values
+                        if hasattr(x, 'shape') and hasattr(x, 'view') and len(x.shape) == 1:
+                            floats.extend([float(v) for v in x.view(-1)])
+                        # If x is a 0-dim tensor or scalar
+                        elif hasattr(x, 'item') and callable(x.item):
+                            floats.append(float(x.item()))
+                        elif isinstance(x, (float, int)):
+                            floats.append(float(x))
+                        # If x is something else, skip or error
+                        else:
+                            raise ValueError(f"ColorJitter param element is not a scalar or 1D tensor: {x}")
+                        if len(floats) >= 4:
+                            break
+                    if len(floats) < 4:
+                        raise ValueError(f"Could not extract 4 floats from ColorJitter params: {params}")
+                    return floats[:4]
+                if len(params) >= 1:
+                    b, c, s, h = _extract_floats_from_params(params)
+                    h = max(-0.5, min(0.5, h))
+                    def color_aug(img):
+                        img = F.adjust_brightness(img, b)
+                        img = F.adjust_contrast(img, c)
+                        img = F.adjust_saturation(img, s)
+                        img = F.adjust_hue(img, h)
+                        return img
+                else:
+                    raise ValueError(f"ColorJitter.get_params returned tuple of length {len(params)}; expected at least 1.")
+            elif hasattr(params, 'shape') and tuple(params.shape) == (4,):
+                from torchvision.transforms import functional as F
+                b, c, s, h = [float(x) for x in params]
+                def clamp_hue(h):
+                    return max(-0.5, min(0.5, h))
+                h = clamp_hue(h)
                 def color_aug(img):
-                    b, c, s, h = params
                     img = F.adjust_brightness(img, b)
                     img = F.adjust_contrast(img, c)
                     img = F.adjust_saturation(img, s)
                     img = F.adjust_hue(img, h)
                     return img
             else:
-                color_aug = params
+                color_aug = (lambda x: x)
         else:
             color_aug = (lambda x: x)
 
