@@ -54,7 +54,6 @@ class MonoDataset(data.Dataset):
         self.height = height
         self.width = width
         self.num_scales = num_scales
-        # Use LANCZOS for modern Pillow, fallback for older versions
         try:
             self.interp = Image.Resampling.LANCZOS
         except AttributeError:
@@ -176,9 +175,22 @@ class MonoDataset(data.Dataset):
             inputs[("K", scale)] = torch.from_numpy(K)
             inputs[("inv_K", scale)] = torch.from_numpy(inv_K)
 
+
         if do_color_aug:
-            color_aug = transforms.ColorJitter.get_params(
+            params = transforms.ColorJitter.get_params(
                 self.brightness, self.contrast, self.saturation, self.hue)
+            # If params is a tuple, wrap it in a function that applies the augmentations
+            if isinstance(params, tuple):
+                from torchvision.transforms import functional as F
+                def color_aug(img):
+                    b, c, s, h = params
+                    img = F.adjust_brightness(img, b)
+                    img = F.adjust_contrast(img, c)
+                    img = F.adjust_saturation(img, s)
+                    img = F.adjust_hue(img, h)
+                    return img
+            else:
+                color_aug = params
         else:
             color_aug = (lambda x: x)
 
@@ -204,7 +216,15 @@ class MonoDataset(data.Dataset):
         return inputs
 
     def get_color(self, folder, frame_index, side, do_flip):
-        raise NotImplementedError
+        color = self.loader(self.get_image_path(folder, frame_index, side))
+        # If loader returns a tuple (image, ...), extract the image
+        if isinstance(color, tuple):
+            color = color[0]
+        if not isinstance(color, Image.Image):
+            color = Image.fromarray(np.array(color))
+        if do_flip:
+            color = color.transpose(Image.FLIP_LEFT_RIGHT)
+        return color
 
     def check_depth(self):
         raise NotImplementedError
