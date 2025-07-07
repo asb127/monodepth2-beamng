@@ -7,8 +7,8 @@ class BeamNGDataset(MonoDataset):
     """
     Monodepth2-compatible Dataset for BeamNG Driving Dataset.
     Expects directory structure:
-    BeamNG-Driving-Dataset/<session>/color/frame_xxxxx_sensor_camera_color.png
-    BeamNG-Driving-Dataset/<session>/depth/frame_xxxxx_sensor_camera_depth.png
+    ./BeamNG-Driving-Dataset/<session>/color/frame_xxxxx_sensor_camera_color.png
+    ./BeamNG-Driving-Dataset/<session>/depth/frame_xxxxx_sensor_camera_depth.png
     """
     def __init__(self, *args, **kwargs):
         super(BeamNGDataset, self).__init__(*args, **kwargs)

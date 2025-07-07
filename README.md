@@ -20,7 +20,9 @@ conda activate monodepth2
 Install all required Python packages:
 
 ```sh
-pip install -r requirements.txt
+pip install torch==0.4.1 torchvision==0.2.1 -f https://download.pytorch.org/whl/torch_stable.html
+pip install tensorboardX==1.4
+conda install opencv=3.3.1   # just needed for evaluation
 ```
 
 Create the directory where the BeamNG Driving Dataset will be stored, if it does not exist:
@@ -34,6 +36,7 @@ Create the directory where the BeamNG Driving Dataset will be stored, if it does
   ```
 
 ---
+
 
 ## 2. Downloading the Dataset
 
@@ -77,22 +80,25 @@ Alternatively, you can use the command line for a more automated and reproducibl
 - **With megatools:**
   ```sh
   megadl 'https://mega.nz/file/gYtXjA5D#XhzsrDOxR4W1psKM5fkh3dADfqlIrdlffNTDnxDkE7A' --path ./BeamNG-Driving-Dataset
+  megadl 'https://mega.nz/file/gYtXjA5D#XhzsrDOxR4W1psKM5fkh3dADfqlIrdlffNTDnxDkE7A' --path "./BeamNG-Driving-Dataset"
   ```
 - **With megacmd:**
   ```sh
   mega-get 'https://mega.nz/file/gYtXjA5D#XhzsrDOxR4W1psKM5fkh3dADfqlIrdlffNTDnxDkE7A' ./BeamNG-Driving-Dataset
+  mega-get 'https://mega.nz/file/gYtXjA5D#XhzsrDOxR4W1psKM5fkh3dADfqlIrdlffNTDnxDkE7A' "./BeamNG-Driving-Dataset"
   ```
 
-### 2.3 After Downloading
-
-Extract the dataset if needed. The expected folder structure is:
+After downloading, extract the dataset if needed. The expected folder structure is:
 
 ```
 BeamNG-Driving-Dataset/<session>/color/frame_xxxxx_sensor_camera_color.png
 BeamNG-Driving-Dataset/<session>/depth/frame_xxxxx_sensor_camera_depth.png
+./BeamNG-Driving-Dataset/<session>/color/frame_xxxxx_sensor_camera_color.png
+./BeamNG-Driving-Dataset/<session>/depth/frame_xxxxx_sensor_camera_depth.png
 ```
 
 ---
+
 
 ## 3. Preparing the splits
 
@@ -106,12 +112,68 @@ Predefined splits for training and validation are provided:
 
 ---
 
-## 4. Training with BeamNG Driving Dataset
+
+## 4. KITTI Setup (Required for Evaluation)
+
+To enable KITTI-style evaluation, you must set up the KITTI dataset and ground truth files. Follow these steps (as presented in the Monodepth2 instructions):
+
+1. **Download the required KITTI raw data:**
+   ```sh
+   wget -i splits/kitti_archives_to_download.txt -P kitti_data/
+   ```
+2. **Unzip all archives:**
+   ```sh
+   cd kitti_data
+   unzip "*.zip"
+   cd ..
+   ```
+   **Warning:** The full dataset is large (~175GB). If not enough space is available, consider using the `raw_data_downloader` scripts, adapted to only download the Eigen test sequences and calibrations.
+
+- **Linux/macOS:**
+   ```bash
+   bash raw_data_downloader.sh
+   ```
+   
+- **Windows:**
+   ```powershell
+   ./raw_data_downloader.bat
+   ```
+
+3. **Convert all PNG images to JPEG (recommended for speed and compatibility):**
+   ```sh
+   find kitti_data/ -name '*.png' | parallel 'convert -quality 92 -sampling-factor 2x2,1x1,1x1 {.}.png {.}.jpg && rm {}'
+   ```
+   Or, to skip this step and use PNGs, add `--png` to your training/evaluation commands (slower).
+
+4. **Export the ground truth depth maps:**
+   ```sh
+   python export_gt_depth.py --data_path kitti_data --split eigen
+   ```
+
+Note that the evaluation scrips expect the following file structure.
+
+```
+kitti_data/
+  2011_09_26/
+    2011_09_26_drive_0002_sync/
+      image_02/
+      velodyne_points/
+      ...
+  2011_09_28/
+    2011_09_28_drive_0002_sync/
+      ...
+  ...
+  ```
+
+You can now train and evaluate using the BeamNG and KITTI pipelines.
+
+## 5. Training with BeamNG Driving Dataset
 
 To train a model on the BeamNG Driving Dataset:
 
 ```sh
 python train.py --model_name beamng_mono --data_path ./BeamNG-Driving-Dataset --split beamng --dataset beamng
+python train.py --model_name beamng_mono --data_path "./BeamNG-Driving-Dataset" --split beamng --dataset beamng
 ```
 
 - `--model_name` sets the experiment name (change as desired).
@@ -121,7 +183,19 @@ python train.py --model_name beamng_mono --data_path ./BeamNG-Driving-Dataset --
 
 ---
 
-## 6. Ubuntu script to finetune mono_640x192 model on BeamNG and compre results
+
+## 6. Evaluation
+
+To do KITTI-style evaluation:
+
+```sh
+python evaluate_depth.py --load_weights_folder <path_to_weights> --eval_split eigen --eval_mono
+```
+
+---
+
+
+## 7. Ubuntu script to finetune mono_640x192 model on BeamNG and compare results
 
 An Ubuntu bash script is provided to:
 - Download the official pretrained mono_640x192 model
