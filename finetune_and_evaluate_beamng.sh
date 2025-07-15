@@ -8,10 +8,10 @@ if [ ! -d "./kitti_data/2011_09_26/2011_09_26_drive_0002_sync" ]; then
     mkdir -p kitti_data
     wget -N -i splits/kitti_archives_to_download.txt -P kitti_data/
     echo "[INFO] Extracting all zip files in ./kitti_data..."
-    cd kitti_data
-    for z in *.zip; do
-        unzip -o "$z"
-    done
+cd kitti_data
+for z in *.zip; do
+    unzip -o "$z"
+done
     cd ..
 fi
 
@@ -54,7 +54,6 @@ python evaluate_depth.py \
   --load_weights_folder ./models/mono_640x192 \
   --eval_mono \
   --save_pred_disps \
-  --save_pred_depth \
   --output_dir ./eval_results/original_mono_640x192
 
 # Evaluate the finetuned model on KITTI (using last checkpoint)
@@ -64,5 +63,4 @@ python evaluate_depth.py \
   --load_weights_folder ./tmp/beamng_finetuned_mono_640x192/models/weights_19 \
   --eval_mono \
   --save_pred_disps \
-  --save_pred_depth \
   --output_dir ./eval_results/finetuned_mono_640x192
