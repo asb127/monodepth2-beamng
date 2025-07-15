@@ -40,9 +40,11 @@ Create the directory where the BeamNG Driving Dataset will be stored, if it does
 
 ## 2. Downloading the Dataset
 
-The BeamNG Driving Dataset is available for download from Mega:
 
-**[Download BeamNG-Driving-Dataset from Mega](https://mega.nz/file/gYtXjA5D#XhzsrDOxR4W1psKM5fkh3dADfqlIrdlffNTDnxDkE7A)**
+The BeamNG Driving Dataset is available for download from:
+
+- **[Mega](https://mega.nz/file/gYtXjA5D#XhzsrDOxR4W1psKM5fkh3dADfqlIrdlffNTDnxDkE7A)**
+- **[MediaFire](http://www.mediafire.com/file/yyq3iianetjj0ds/BeamNG-Driving-Dataset-for-Monodepth2.zip)**
 
 Alternatively, you can use the command line for a more automated and reproducible download. Choose either `megatools` or `megacmd` and follow the steps below.
 
