@@ -20,10 +20,14 @@ conda activate monodepth2
 Install all required Python packages:
 
 ```sh
-pip install torch==0.4.1 torchvision==0.2.1 -f https://download.pytorch.org/whl/torch_stable.html
+conda install pytorch=1.8.1 torchvision=0.9.1 cudatoolkit=11.1 -c pytorch -c conda-forge
 pip install tensorboardX==1.4
 conda install opencv=3.3.1   # just needed for evaluation
 ```
+
+
+**Important Compatibility Note:**
+- This codebase has been updated to work on modern versions of PyTorch. Legacy versions, like the 0.4.1 recommended by the original proejct, are **no longer supported** and will likely fail due to API changes and code updates.
 
 Create the directory where the BeamNG Driving Dataset will be stored, if it does not exist:
 - **On Linux/macOS:**

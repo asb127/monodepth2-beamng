@@ -15,6 +15,7 @@ from PIL import Image  # using pillow-simd for increased speed
 import torch
 import torch.utils.data as data
 from torchvision import transforms
+from torchvision.transforms import InterpolationMode
 
 
 def pil_loader(path):
@@ -54,7 +55,7 @@ class MonoDataset(data.Dataset):
         self.height = height
         self.width = width
         self.num_scales = num_scales
-        self.interp = Image.ANTIALIAS
+        self.interp = InterpolationMode.BILINEAR
 
         self.frame_idxs = frame_idxs
 
@@ -173,8 +174,14 @@ class MonoDataset(data.Dataset):
             inputs[("inv_K", scale)] = torch.from_numpy(inv_K)
 
         if do_color_aug:
-            color_aug = transforms.ColorJitter.get_params(
-                self.brightness, self.contrast, self.saturation, self.hue)
+            jitter = transforms.ColorJitter(
+                brightness=self.brightness,
+                contrast=self.contrast,
+                saturation=self.saturation,
+                hue=self.hue
+            )
+            def color_aug(img):
+                return jitter(img)
         else:
             color_aug = (lambda x: x)
 

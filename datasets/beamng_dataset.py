@@ -49,7 +49,7 @@ class BeamNGDataset(MonoDataset):
         The 'side' argument is ignored because this dataset is monocular (only one camera).
         """
         fname = f"frame_{frame_index:05d}_sensor_camera_color.png"
-        return os.path.join(self.data_path, folder, fname)
+        return os.path.join(self.data_path, folder, "color", fname)
 
     def get_depth_path(self, folder, frame_index):
         """
