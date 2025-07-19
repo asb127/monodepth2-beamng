@@ -48,14 +48,14 @@ class BeamNGDataset(MonoDataset):
         Returns the path to the color image for a given session and frame index.
         The 'side' argument is ignored because this dataset is monocular (only one camera).
         """
-        fname = f"frame_{frame_index:05d}_sensor_camera_color.png"
+        fname = f"frame_{frame_index:05d}_sensor_camera_color" + self.img_ext
         return os.path.join(self.data_path, folder, "color", fname)
 
     def get_depth_path(self, folder, frame_index):
         """
         Returns the path to the depth image for a given session and frame index.
         """
-        fname = f"frame_{frame_index:05d}_sensor_camera_depth.png"
+        fname = f"frame_{frame_index:05d}_sensor_camera_depth" + self.img_ext
         return os.path.join(self.data_path, folder, "depth", fname)
 
     def check_depth(self):
