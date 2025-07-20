@@ -40,9 +40,16 @@ if not exist .\kitti_data\2011_09_26\2011_09_26_drive_0002_sync (
     popd
 )
 
-REM Convert PNGs to JPGs for faster loading
+REM Convert PNGs to JPGs for faster loading (KITTI then BeamNG)
 echo [INFO] Step 2: Converting KITTI PNG images to JPG (this may take a while)...
 for /r .\kitti_data %%f in (*.png) do (
+    if exist "%%~dpnf.jpg" del "%%~dpnf.jpg"
+    magick "%%f" -quality 92 -sampling-factor 2x2,1x1,1x1 "%%~dpnf.jpg"
+    del "%%f"
+)
+
+echo [INFO] Step 3: Converting BeamNG PNG images to JPG (this may take a while)...
+for /r .\BeamNG-Driving-Dataset %%f in (*.png) do (
     if exist "%%~dpnf.jpg" del "%%~dpnf.jpg"
     magick "%%f" -quality 92 -sampling-factor 2x2,1x1,1x1 "%%~dpnf.jpg"
     del "%%f"
@@ -56,6 +63,7 @@ if not exist .\splits\eigen\gt_depths.npz (
 )
 
 call conda activate monodepth2
+
 echo [INFO] Step 4: Finetuning on BeamNG Driving Dataset
 python train.py ^
   --model_name beamng_finetuned_mono_640x192 ^
@@ -63,37 +71,12 @@ python train.py ^
   --split beamng ^
   --dataset beamng ^
   --load_weights_folder .\models\mono_640x192 ^
-  --png ^
-  --log_frequency 100 ^
-  --num_epochs 20 ^
-  --batch_size 12 ^
-  --height 192 ^
-  --width 640 ^
-  --save_frequency 1 ^
-  --scheduler_step_size 10 ^
-  --scheduler_gamma 0.5 ^
-  --learning_rate 1e-4 ^
-  --num_workers 4 ^
-  --disable_automated_logging
+  --disable_automasking
 
 echo [INFO] Step 5: Evaluating the original mono_640x192 model on KITTI
-python evaluate_depth.py ^
-  --data_path .\kitti_data ^
-  --split beamng ^
-  --eval_split eigen ^
-  --load_weights_folder .\models\mono_640x192 ^
-  --eval_mono ^
-  --save_pred_disps ^
-  --output_dir .\eval_results\original_mono_640x192
+python evaluate_depth.py --load_weights_folder .\models\mono_640x192 --eval_mono
 
 echo [INFO] Step 6: Evaluating the finetuned model on KITTI (using last checkpoint)
-python evaluate_depth.py ^
-  --data_path .\kitti_data ^
-  --split beamng ^
-  --eval_split eigen ^
-  --load_weights_folder .\tmp\beamng_finetuned_mono_640x192\models\weights_19 ^
-  --eval_mono ^
-  --save_pred_disps ^
-  --output_dir .\eval_results\finetuned_mono_640x192
+python evaluate_depth.py --load_weights_folder .\tmp\beamng_finetuned_mono_640x192\models\weights_19 --eval_mono
 
 echo [INFO] All steps completed. Results and depth maps will be saved in .\eval_results\original_mono_640x192 and .\eval_results\finetuned_mono_640x192

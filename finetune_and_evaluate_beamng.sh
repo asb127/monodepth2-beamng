@@ -15,9 +15,13 @@ done
     cd ..
 fi
 
-# Convert PNGs to JPGs for faster loading
+
+# Convert PNGs to JPGs for faster loading (KITTI then BeamNG)
 echo "[INFO] Converting KITTI PNG images to JPG (this may take a while)..."
 find kitti_data/ -name '*.png' | parallel 'convert -quality 92 -sampling-factor 2x2,1x1,1x1 {.}.png {.}.jpg && rm {}'
+
+echo "[INFO] Converting BeamNG PNG images to JPG (this may take a while)..."
+find BeamNG-Driving-Dataset/ -name '*.png' | parallel 'convert -quality 92 -sampling-factor 2x2,1x1,1x1 {.}.png {.}.jpg && rm {}'
 
 # Generate ground truth depths if not present
 if [ ! -f "./splits/eigen/gt_depths.npz" ]; then
@@ -38,29 +42,10 @@ unzip -o mono_640x192.zip -d mono_640x192
 cd ..
 
 # Finetune it on BeamNG Driving Dataset
-python train.py \
-  --model_name beamng_finetuned_mono_640x192 \
-  --data_path "./BeamNG-Driving-Dataset" \
-  --split beamng \
-  --dataset beamng \
-  --load_weights_folder ./models/mono_640x192 \
-  --num_epochs 20 \
-  --save_frequency 5
+python train.py --model_name beamng_finetuned_mono_640x192 --data_path "./BeamNG-Driving-Dataset" --split beamng --dataset beamng --load_weights_folder ./models/mono_640x192 --disable_automasking
 
 # Evaluate the original mono_640x192 model on KITTI
-python evaluate_depth.py \
-  --data_path ./kitti_data \
-  --split eigen \
-  --load_weights_folder ./models/mono_640x192 \
-  --eval_mono \
-  --save_pred_disps \
-  --output_dir ./eval_results/original_mono_640x192
+python evaluate_depth.py --load_weights_folder ./models/mono_640x192 --eval_mono
 
 # Evaluate the finetuned model on KITTI (using last checkpoint)
-python evaluate_depth.py \
-  --data_path ./kitti_data \
-  --split eigen \
-  --load_weights_folder ./tmp/beamng_finetuned_mono_640x192/models/weights_19 \
-  --eval_mono \
-  --save_pred_disps \
-  --output_dir ./eval_results/finetuned_mono_640x192
+python evaluate_depth.py --load_weights_folder ./tmp/beamng_finetuned_mono_640x192/models/weights_19 --eval_mono

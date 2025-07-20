@@ -1,6 +1,5 @@
 # 🏎️ BeamNG Driving Dataset for Monodepth2
 
----
 ## 1. Environment Setup
 
 Clone the repository and enter the project directory:
@@ -38,8 +37,6 @@ Create the directory where the BeamNG Driving Dataset will be stored, if it does
   ```sh
   mkdir BeamNG-Driving-Dataset
   ```
-
----
 
 
 ## 2. Downloading the Dataset
@@ -86,24 +83,30 @@ Alternatively, you can use the command line for a more automated and reproducibl
 - **With megatools:**
   ```sh
   megadl 'https://mega.nz/file/gYtXjA5D#XhzsrDOxR4W1psKM5fkh3dADfqlIrdlffNTDnxDkE7A' --path ./BeamNG-Driving-Dataset
-  megadl 'https://mega.nz/file/gYtXjA5D#XhzsrDOxR4W1psKM5fkh3dADfqlIrdlffNTDnxDkE7A' --path "./BeamNG-Driving-Dataset"
   ```
 - **With megacmd:**
   ```sh
   mega-get 'https://mega.nz/file/gYtXjA5D#XhzsrDOxR4W1psKM5fkh3dADfqlIrdlffNTDnxDkE7A' ./BeamNG-Driving-Dataset
-  mega-get 'https://mega.nz/file/gYtXjA5D#XhzsrDOxR4W1psKM5fkh3dADfqlIrdlffNTDnxDkE7A' "./BeamNG-Driving-Dataset"
   ```
 
 After downloading, extract the dataset if needed. The expected folder structure is:
 
 ```
-BeamNG-Driving-Dataset/<session>/color/frame_xxxxx_sensor_camera_color.png
-BeamNG-Driving-Dataset/<session>/depth/frame_xxxxx_sensor_camera_depth.png
 ./BeamNG-Driving-Dataset/<session>/color/frame_xxxxx_sensor_camera_color.png
 ./BeamNG-Driving-Dataset/<session>/depth/frame_xxxxx_sensor_camera_depth.png
 ```
 
----
+#### Optional: Convert BeamNG PNG images to JPEG
+
+By default, BeamNG images are stored as PNG. For faster training and compatibility, you can convert all color and depth images to JPEG:
+
+```sh
+find BeamNG-Driving-Dataset/ -name '*.png' | parallel 'convert -quality 92 -sampling-factor 2x2,1x1,1x1 {.}.png {.}.jpg && rm {}'
+```
+
+- This will convert all PNGs to JPEGs and remove the original PNG files.
+- If you want to keep the PNGs, remove the `&& rm {}` part.
+- If you decide to use PNGs, you **mjst** add `--png` to your training/evaluation commands.
 
 
 ## 3. Preparing the splits
@@ -115,8 +118,6 @@ Predefined splits for training and validation are provided:
 **Custom splits:**
 - To use a different split, edit `tools/make_beamng_split.py` and run it to regenerate the split files.
 - The script supports custom ratios and random seeds for reproducibility.
-
----
 
 
 ## 4. KITTI Setup (Required for Evaluation)
@@ -173,21 +174,31 @@ kitti_data/
 
 You can now train and evaluate using the BeamNG and KITTI pipelines.
 
-## 5. Training with BeamNG Driving Dataset
 
-To train a model on the BeamNG Driving Dataset:
+## 5. Training and Finetuning with BeamNG Driving Dataset
+
+To train a model on the BeamNG Driving Dataset from scratch:
 
 ```sh
-python train.py --model_name beamng_mono --data_path ./BeamNG-Driving-Dataset --split beamng --dataset beamng
-python train.py --model_name beamng_mono --data_path "./BeamNG-Driving-Dataset" --split beamng --dataset beamng
+python train.py --model_name beamng_mono --data_path "./BeamNG-Driving-Dataset" --split beamng --dataset beamng --disable_automasking
 ```
+
+
+To **finetune** a pretrained model (e.g., mono_640x192) on BeamNG:
+
+```sh
+python train.py --model_name beamng_finetuned_mono_640x192 --data_path "./BeamNG-Driving-Dataset" --split beamng --dataset beamng --load_weights_folder ./models/mono_640x192 --disable_automasking
+```
+
+**Important:**
+- The `--disable_automasking` flag is **required** for BeamNG or other static/synthetic datasets. If omitted, automasking will mask out all pixels and the loss will be zero.
+
+If you see loss values stuck at zero, check your command and ensure `--disable_automasking` is present.
 
 - `--model_name` sets the experiment name (change as desired).
 - `--data_path` should point to your BeamNG dataset folder (relative or absolute).
 - `--split beamng` tells the loader to use the BeamNG split files.
 - You can pass additional options to `train.py` as needed (see `python train.py -h`).
-
----
 
 
 ## 6. Evaluation
@@ -198,7 +209,7 @@ To do KITTI-style evaluation:
 python evaluate_depth.py --load_weights_folder <path_to_weights> --eval_split eigen --eval_mono
 ```
 
----
+
 
 
 ## 7. Ubuntu script to finetune mono_640x192 model on BeamNG and compare results
@@ -220,13 +231,13 @@ bash finetune_and_evaluate_beamng.sh
 
 By default, the script will create all necessary folders and save the results in `./eval_results/original_mono_640x192` and `./eval_results/finetuned_mono_640x192`.
 
----
+
 
 ## 7. Citing & License
 
 If you use this dataset or code, please cite the original Monodepth2 paper (see below) and respect the license terms.
 
----
+
 # Monodepth2 (original README)
 
 This is the reference PyTorch implementation for training and testing depth estimation models using the method described in
